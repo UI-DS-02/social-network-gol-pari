@@ -2,6 +2,12 @@
 #include <list>
 #include <algorithm>
 #include <vector>
+#include <unordered_map>
+#include <set>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include "json.hpp"
 using namespace std;
 
 template<typename E>//E = edge struct
@@ -697,6 +703,45 @@ public:
     vector<int> connection;
 };
 
-int main() {
-
+int main() 
+{
+    std::ifstream json_file("users.json"); 
+    nlohmann::json people;
+    json_file >> people;
+    user x ;
+    Adjacency_list graph ;
+    for (const auto& person : people) 
+    {
+        x.id = stoi(person["id"].get<std::string>());
+        x.name = person["name"].get<std::string>() ;
+        x.dateOfBirth = person["dateOfBirth"].get<std::string>() ;
+        x.universityLocation = person["universityLocation"].get<std::string>() ;
+        x.field = person["field"].get<std::string>() ;
+        x.workplace = person["workplace"].get<std::string>() ;
+        for (const auto& specialty : person["specialties"]) 
+        {
+            x.specialties.push_back(specialty.get<std::string>());
+        }
+        for (const auto& connection : person["connectionId"]) 
+        {
+            x.connection.push_back(stoi(connection.get<std::string>()));
+        }
+        graph.insertVertex(x.id);
+        for (const auto& connection : x.connection) 
+        {
+            list<int> vertices = graph.getVertices();
+            bool find = false ;
+            for (auto x : vertices) 
+            {
+                if(x == connection) //if the vertex already existed 
+                {
+                    find = true ;
+                    break;
+                }
+            }
+            if (find == false) // if the vertex is not existed , insert it 
+                graph.insertVertex(connection);
+            graph.insertEdge(x.id,connection,0);
+        }
+    }
 }
