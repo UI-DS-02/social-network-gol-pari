@@ -145,7 +145,6 @@ public:
     }
 
     void removeVertex(int v) override{
-        // Remove edges incident on vertex v
         auto it = edges.begin();
         while (it != edges.end()) {
             if (it->edge.src == v || it->edge.dest == v) {
@@ -179,7 +178,131 @@ public:
         }
     }
 };
+struct Edge2 {
+    int src;
+    int dest;
+};
+
+class Graph2 :AbstractClass<Edge2>{
+private:
+    unordered_map<int, list<Edge2>> adjacencyMap;
+
+public:
+    void insertVertex(int v) override{
+        adjacencyMap[v] = {};
+    }
+
+    void insertEdge(int u, int v,int x) override{
+        adjacencyMap[u].push_back({ u, v });
+    }
+
+    void removeVertex(int v) override{
+        // Remove outbound edges
+        for (auto& adjList : adjacencyMap) {
+            adjList.second.remove_if([v](Edge2 edge) {
+                return edge.dest == v;
+            });
+        }
+
+        // Remove vertex
+        adjacencyMap.erase(v);
+    }
+
+    void removeEdge(Edge2 e) override{
+        if (adjacencyMap.find(e.src) != adjacencyMap.end()) {
+            adjacencyMap[e.src].remove_if([&e](Edge2 edge) {
+                return edge.dest == e.dest;
+            });
+        }
+    }
+
+    int numVertices() {
+        return adjacencyMap.size();
+    }
+
+    list<int> getVertices() {
+        list<int> vertices;
+        for (const auto& p : adjacencyMap) {
+            vertices.push_back(p.first);
+        }
+        return vertices;
+    }
+
+    int numEdges() {
+        int count = 0;
+        for (const auto& p : adjacencyMap) {
+            count += p.second.size();
+        }
+        return count;
+    }
+
+    list<Edge2> getEdges() {
+        list<Edge2> edges;
+        for (const auto& p : adjacencyMap) {
+            edges.insert(edges.end(), p.second.begin(), p.second.end());
+        }
+        return edges;
+    }
+
+    Edge2 getEdge(int u, int v) {
+        if (adjacencyMap.find(u) != adjacencyMap.end()) {
+            auto it = find_if(adjacencyMap[u].begin(), adjacencyMap[u].end(), [v](Edge2 edge) {
+                return edge.dest == v;
+            });
+            if (it != adjacencyMap[u].end()) {
+                return *it;
+            }
+        }
+        return { -1, -1 };
+    }
+
+    pair<int, int> endVertices(Edge e) {
+        return make_pair(e.src, e.dest);
+    }
+
+    int opposite(int v, Edge e) {
+        return e.src == v ? e.dest : e.src;
+    }
+
+    int outDegree(int v) {
+        if (adjacencyMap.find(v) != adjacencyMap.end()) {
+            return adjacencyMap[v].size();
+        }
+        return 0;
+    }
+
+    int inDegree(int v) {
+        int count = 0;
+        for (const auto& p : adjacencyMap) {
+            for (const auto& edge : p.second) {
+                if (edge.dest == v) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    list<Edge2> outgoingEdges(int v) {
+        if (adjacencyMap.find(v) != adjacencyMap.end()) {
+            return adjacencyMap[v];
+        }
+        return {};
+    }
+
+    list<Edge2> incomingEdges(int v) {
+        list<Edge2> incoming;
+        for (const auto& p : adjacencyMap) {
+            for (const auto& edge : p.second) {
+                if (edge.dest == v) {
+                    incoming.push_back({ p.first, edge.dest });
+                }
+            }
+        }
+        return incoming;
+    }
+};
 
 int main() {
-    
+
 }
