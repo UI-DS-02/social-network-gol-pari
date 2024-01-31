@@ -1,8 +1,22 @@
 #include <iostream>
 #include <list>
 #include <algorithm>
-
+<<<<<<< HEAD
+#include <unordered_map>
+=======
+#include <vector>
+#include <unordered_map>
+#include <map>
+#include <set>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <functional>
+#include "json.hpp"
+>>>>>>> b4a69bac9b9ae248921771f6ee838a99f24ef0c0
 using namespace std;
+using json = nlohmann::json;
+
 template<typename E>//E = edge struct
 class AbstractClass{
 public:
@@ -34,8 +48,7 @@ struct Vertex {
     int value;
     list<Vertex>::iterator position;
 };
-
-class Graph : public AbstractClass<Edge>{
+class Edge_list : public AbstractClass<Edge>{
 private:
 
     list<Vertex> vertices;
@@ -178,12 +191,12 @@ public:
         }
     }
 };
+
 struct Edge2 {
     int src;
     int dest;
 };
-
-class Graph2 :AbstractClass<Edge2>{
+class Adjacency_map :AbstractClass<Edge2>{
 private:
     unordered_map<int, list<Edge2>> adjacencyMap;
 
@@ -303,6 +316,537 @@ public:
     }
 };
 
-int main() {
+class Adjacency_list : public AbstractClass<pair<int,int>>
+{
+public:
+    int num_vertices;
+    vector<vector<int>> adj_list;
+    int num_edges;
+    Adjacency_list() //constructor  
+    {
+        num_vertices = 0;
+        num_edges = 0;
+    }
 
+    int numVertices() override//return the number of vertices of the graph 
+    {
+        return num_vertices;
+    }
+
+    list<int> getVertices() override//return an iteration of all the vertices of the graph
+    {
+        list<int> vertices_list;
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            vertices_list.push_back(adj_list[i][0]);
+        }
+        return vertices_list;
+    }
+
+    int numEdges() override // return the number of edges of the graph 
+    {
+        return num_edges;
+    }
+
+    list<pair<int,int>> getEdges() override //return an iteration of all the edges of the graph
+    {
+        list<pair<int,int>> edges;
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            for (int j = 1; j < adj_list[i].size(); j++) 
+            {
+                edges.push_back(make_pair(adj_list[i][0],adj_list[i][j]));
+            }
+        }
+        return edges;
+    }
+
+    pair<int,int> getEdge(int u, int v) override //return the edge from vertex u to v 
+    { 
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            if (adj_list[i][0] == u) 
+            {
+                for(int j=1 ; j<adj_list[i].size() ; j++)
+                {
+                    if(adj_list[i][j] == v)
+                        return make_pair(u , v);
+                }
+                break;     
+            }
+        }
+        return make_pair(-1 , -1);
+    }
+
+    pair<int, int> endVertices(pair<int, int> e) override//return the two endpoint of vertices of edge e
+    {
+        return make_pair(e.first,e.second);   
+    }
+
+    int opposite(int v, pair<int, int> e) override//return the other vertex of the edge 
+    {
+        pair<int,int> vertex = endVertices(e);
+        if(v == vertex.first)
+            return vertex.second;
+        else if(v == vertex.second)
+            return vertex.first;
+        return -1;
+    }
+
+    int outDegree(int v) override// return the number of outgoing edges from vertex v 
+    {
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            if (adj_list[i][0] == v) 
+            {
+                return adj_list[v].size()-1;
+            }
+        }
+        return -1;
+    }
+
+    int inDegree(int v) override// return the number of incoming edges to vertex v 
+    {
+        return outDegree(v);
+    }
+
+    list<pair<int,int>> outgoingEdges(int v) override//return an iteration of all outgoing edges from vertex v
+    {
+        list<pair<int,int>> outgoing_edges_list;
+        for (int i = 0; i < num_vertices ; i++) 
+        {
+            if(adj_list[i][0] == v)
+            {
+                for(int j=1 ; j<adj_list[i].size() ; j++)
+                {
+                    outgoing_edges_list.push_back(make_pair(adj_list[i][0],adj_list[i][j]));
+                }
+                return outgoing_edges_list;
+            }
+        }
+         return outgoing_edges_list;
+    }
+
+    list<pair<int,int>> incomingEdges(int v) override// return an iteration of all incoming edges to vertex v
+    {
+        return outgoingEdges(v);
+    }
+
+    void insertVertex(int x) override// create a new vertex with element x 
+    {
+        vector<int> new_vertex = {x};
+        adj_list.push_back(new_vertex);
+        num_vertices++;
+    }
+
+    void insertEdge(int u, int v, int x) override// create a new edge from vertex u to v with element x
+    {
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            if(adj_list[i][0] == u)
+            {
+                adj_list[i].push_back(v);
+                break;
+            }
+        }
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            if(adj_list[i][0] == v)
+            {
+                adj_list[i].push_back(u);
+                break;
+            }
+        }
+        num_edges++;
+    }
+
+    void removeVertex(int v) override// remove vertex v and all its edges from graph
+    {
+        int temp;
+        for(int i=0 ; i<num_vertices ; i++)
+        {
+            if(adj_list[i][0] == v)
+            {
+                temp=i;
+                break;
+            }
+        }
+        adj_list.erase(adj_list.begin() + temp);
+        num_vertices--;
+        for (int i = 0; i < num_vertices; i++) 
+        {
+            for (int j = 0; j < adj_list[i].size(); j++) 
+            {
+                if (adj_list[i][j] == v)
+                {
+                    adj_list[i].erase(adj_list[i].begin() + j);
+                    num_edges--;
+                }
+            }
+        }
+    }
+
+    void removeEdge(pair<int, int> e) override// removes edge e 
+    {
+        for(int j=0 ; j<num_vertices ; j++)
+        {
+            if(e.first == adj_list[j][0])
+            {
+                for (int i = 1; i < adj_list[j].size(); i++)
+                {
+                    if(e.second == adj_list[j][i])
+                        adj_list[j].erase(adj_list[j].begin() + i);
+                }
+            }  
+        }
+        for(int j=0 ; j<num_vertices ; j++)
+        {
+            if(e.second == adj_list[j][0])
+            {
+                for (int i = 1; i < adj_list[j].size(); i++)
+                {
+                    if(e.first == adj_list[j][i])
+                        adj_list[j].erase(adj_list[j].begin() + i);
+                }
+            }  
+        }
+        num_edges--;
+    }
+};
+
+class Adjacency_matrix : public AbstractClass<int>
+{
+public:
+    int num_Vertices;
+    int num_edges;
+    vector<vector<int>> adjMatrix;
+    Adjacency_matrix()
+    {
+        num_Vertices = 0;
+        num_edges = 0;
+        vector<int> newmat = {0};
+        adjMatrix.push_back(newmat);
+    }
+    int numVertices() override//return the number of vertices of the graph 
+    {
+        return num_Vertices;
+    }
+    list<int> getVertices() override
+    {
+        list<int> vertices;
+        for (int i = 1 ; i < num_Vertices; i++) 
+        {
+            vertices.push_back(adjMatrix[i][0]);
+        }
+        return vertices;
+    }
+    int numEdges() override // return the number of edges of the graph 
+    {
+        return num_edges;
+    }
+    list<int> getEdges() override //return an iteration of all the edges of the graph
+    {
+        list<int> edges;
+        for (int i = 1 ; i < num_Vertices; i++) 
+        {
+            for (int j = 1; j < adjMatrix[i].size(); j++) 
+            {
+                if (adjMatrix[i][j] != 0) 
+                {
+                    edges.push_back(adjMatrix[i][j]);
+                }
+            }
+        }
+        return edges;
+    }
+    pair<int, int> endVertices(int e) override//return the two endpoint of vertices of edge e
+    {
+        for (int i = 1 ; i < num_Vertices; i++) 
+        {
+            for (int j = 1 ; j < num_Vertices; j++) 
+            {
+                if (adjMatrix[i][j] == e) 
+                {
+                    return make_pair(adjMatrix[i][0],adjMatrix[0][j]);
+                }
+            }
+        }
+        return make_pair(-1, -1);
+    }
+    int opposite(int v, int e) override//return the other vertex of the edge 
+    {
+        pair<int,int> vertex = endVertices(e);
+        if(v == vertex.first)
+            return vertex.second;
+        else if(v == vertex.second)
+            return vertex.first;
+        return -1;
+    }
+    int outDegree(int v) override// return the number of outgoing edges from vertex v 
+    {
+        for (int i = 1; i < num_Vertices; i++) 
+        {
+            if (adjMatrix[i][0] == v) 
+            {
+                int count = 0;
+                for (int j = 1; j < num_Vertices; j++) 
+                {
+                    if (adjMatrix[i][j] != 0) 
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+        return -1;
+    }
+    int inDegree(int v) override// return the number of incoming edges to vertex v 
+    {
+        return outDegree(v);
+    }
+    list<int> outgoingEdges(int v) override//return an iteration of all outgoing edges from vertex v
+    {
+        list<int> outgoing_edges_list;
+        for (int i=1 ; i < num_Vertices ; i++) 
+        {
+            if(adjMatrix[i][0] == v)
+            {
+                for (int j=1 ; j < num_Vertices; j++) 
+                {
+                    if (adjMatrix[i][j] != 0) 
+                    {
+                        outgoing_edges_list.push_back(adjMatrix[i][j]);
+                    }
+                }
+                return outgoing_edges_list ;
+            }
+        }
+        return outgoing_edges_list ;
+    }
+    list<int> incomingEdges(int v) override// return an iteration of all incoming edges to vertex v
+    {
+        return outgoingEdges(v);
+    }
+    void insertVertex(int x) override// create a new vertex with element x 
+    {
+        vector<int> new_vertex = {x};
+        new_vertex.resize(num_Vertices+1 , 0);
+        adjMatrix.push_back(new_vertex);
+        adjMatrix[0].push_back(x);
+        num_Vertices++;
+    }
+    void insertEdge(int u, int v, int x) override// create a new edge from vertex u to v with element x
+    {
+        for (int i = 0; i < num_Vertices ; i++) 
+        {
+            if(adjMatrix[i][0] == u)
+            {
+                u = i;
+                break;
+            }
+        }
+        for (int i = 0; i < num_Vertices ; i++) 
+        {
+            if(adjMatrix[0][i] == v)
+            {
+                v = i;
+                break;
+            }
+        }
+        adjMatrix[u][v] = x;
+        adjMatrix[v][u] = x;
+        num_edges++;
+    }
+    void removeVertex(int v) override// remove vertex v and all its edges from graph
+    {
+        int temp;
+        for(int i=0 ; i< num_Vertices ; i++)
+        {
+            if(adjMatrix[i][0] == v)
+            {
+                temp=i;
+                break;
+            }
+        }
+        for(int i=0 ; i< num_Vertices ; i++)
+        {
+            if (adjMatrix[i][temp] != 0)
+            {
+                adjMatrix[i][temp] = 0 ;
+                num_edges -- ;
+            } 
+        }
+        adjMatrix.erase(adjMatrix.begin() + temp);
+        adjMatrix[0].erase(adjMatrix[0].begin()+temp);
+        num_Vertices--;
+    }
+    void removeEdge(int e) override// removes edge e 
+    {
+        for(int j=1 ; j <num_Vertices ; j++)
+        {
+            for(int i=1 ; i<num_Vertices ; i++)
+            {
+                if(adjMatrix[j][i] == e)
+                {
+                    adjMatrix[j][i] = 0 ;
+                }
+            }  
+        }
+        num_edges--;
+    }
+};
+
+class user 
+{
+public:
+    int id ;
+    string name ;
+    string dateOfBirth;
+    string universityLocation ;
+    string field ;
+    string workplace ;
+    vector<string> specialties ;
+    vector<int> connection;
+    int weight ;
+    user()
+    {
+        this->weight = 0;
+    }
+    bool operator > (const user& u) const 
+    {
+        return (this->weight > u.weight);
+    }
+};
+map<int,user> users;
+
+vector<int> weight(vector<int> id , int person)
+{
+    user per = users[person];
+    for(auto id : id)
+    {
+        user info = users[id] ;
+        for (auto i : per.specialties)
+            for (auto j : info.specialties)
+                if (i == j)
+                    info.weight += 3; //Considering heavy weight for specialties
+        if(info.field == per.field)
+            info.weight += 2;
+        if(info.workplace == per.workplace)
+            info.weight += 1;
+        if(info.universityLocation == per.universityLocation)
+            info.weight += 1; 
+    }
+    return id ;
+}
+
+void menu()
+{
+    cout << "1:Enter the desired person's ID to get 20 suggestions to connect" << endl;
+    cout << "2:Add a new person to the social network" << endl;
+    cout << "3:Exit" << endl ;
+}
+
+int main() 
+{
+    std::ifstream json_file("users.json"); 
+    nlohmann::json people;
+    json_file >> people;
+    user x ;
+    Adjacency_list graph ;
+    for (const auto& person : people) 
+    {
+        x.id = stoi(person["id"].get<std::string>());
+        x.name = person["name"].get<std::string>() ;
+        x.dateOfBirth = person["dateOfBirth"].get<std::string>() ;
+        x.universityLocation = person["universityLocation"].get<std::string>() ;
+        x.field = person["field"].get<std::string>() ;
+        x.workplace = person["workplace"].get<std::string>() ;
+        for (const auto& specialty : person["specialties"]) 
+        {
+            x.specialties.push_back(specialty.get<std::string>());
+        }
+        for (const auto& connection : person["connectionId"]) 
+        {
+            x.connection.push_back(stoi(connection.get<std::string>()));
+        }
+        graph.insertVertex(x.id);
+        for (const auto& connection : x.connection) 
+        {
+            list<int> vertices = graph.getVertices();
+            bool find = false ;
+            for (auto x : vertices) 
+            {
+                if(x == connection) //if the vertex already existed 
+                {
+                    find = true ;
+                    break;
+                }
+            }
+            if (find == false) // if the vertex is not existed , insert it 
+                graph.insertVertex(connection);
+            graph.insertEdge(x.id,connection,0);
+        }
+        users[x.id] = x;
+    }
+    menu();
+    int order ;
+    cin >> order ;
+    while (order != 3)
+    {
+        if (order == 1)
+        {
+            int id ;
+            cin >> id ;
+            // bfs 
+            vector<int> suggest ; //= weight(,id);
+            vector<user> all_suggest ;
+            for(auto sugg : suggest)
+            {
+                user per = users[sugg];
+                all_suggest.push_back(per);
+            }
+            std::sort(all_suggest.begin(), all_suggest.end(), std::greater<user>());
+            for(auto sugg : all_suggest)
+            {
+                cout << "name : " << sugg.name << "id : " << sugg.id << endl ;
+            }
+        }
+        else if (order == 2)
+        {
+            cout << "Inter the id" << endl ;
+            cin >> x.id ;
+            cout << "Inter the name" << endl ;
+            cin >> x.name ;
+            cout << "Inter the dateOfBirth" << endl ;
+            cin >> x.dateOfBirth ;
+            cout << "Inter the universityLocation" << endl ;
+            cin >> x.universityLocation ;
+            cout << "Inter the field" << endl ;
+            cin >> x.field ;
+            cout << "Inter the workplace" << endl ;
+            cin >> x.workplace ;
+            //get connection and specialties
+            graph.insertVertex(x.id);
+            for (const auto& connection : x.connection) 
+            {
+                list<int> vertices = graph.getVertices();
+                bool find = false ;
+                for (auto x : vertices) 
+                {
+                    if(x == connection)
+                    {
+                        find = true ;
+                        break;
+                    }
+                }
+                if (find == false)
+                    graph.insertVertex(connection);
+                graph.insertEdge(x.id,connection,0);
+            }
+            users[x.id] = x;
+        }
+        menu();
+        cin >> order ;
+    }
 }
