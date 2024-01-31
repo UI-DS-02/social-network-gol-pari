@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <set>
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <functional>
 #include "json.hpp"
 using namespace std;
+using json = nlohmann::json;
 
 template<typename E>//E = edge struct
 class AbstractClass{
@@ -701,7 +704,44 @@ public:
     string workplace ;
     vector<string> specialties ;
     vector<int> connection;
+    int weight ;
+    user()
+    {
+        this->weight = 0;
+    }
+    bool operator > (const user& u) const 
+    {
+        return (this->weight > u.weight);
+    }
 };
+map<int,user> users;
+
+vector<int> weight(vector<int> id , int person)
+{
+    user per = users[person];
+    for(auto id : id)
+    {
+        user info = users[id] ;
+        for (auto i : per.specialties)
+            for (auto j : info.specialties)
+                if (i == j)
+                    info.weight += 3; //Considering heavy weight for specialties
+        if(info.field == per.field)
+            info.weight += 2;
+        if(info.workplace == per.workplace)
+            info.weight += 1;
+        if(info.universityLocation == per.universityLocation)
+            info.weight += 1; 
+    }
+    return id ;
+}
+
+void menu()
+{
+    cout << "1:Enter the desired person's ID to get 20 suggestions to connect" << endl;
+    cout << "2:Add a new person to the social network" << endl;
+    cout << "3:Exit" << endl ;
+}
 
 int main() 
 {
@@ -743,5 +783,66 @@ int main()
                 graph.insertVertex(connection);
             graph.insertEdge(x.id,connection,0);
         }
+        users[x.id] = x;
+    }
+    menu();
+    int order ;
+    cin >> order ;
+    while (order != 3)
+    {
+        if (order == 1)
+        {
+            int id ;
+            cin >> id ;
+            // bfs 
+            vector<int> suggest ; //= weight(,id);
+            vector<user> all_suggest ;
+            for(auto sugg : suggest)
+            {
+                user per = users[sugg];
+                all_suggest.push_back(per);
+            }
+            std::sort(all_suggest.begin(), all_suggest.end(), std::greater<user>());
+            for(auto sugg : all_suggest)
+            {
+                cout << "name : " << sugg.name << "id : " << sugg.id << endl ;
+            }
+        }
+        else if (order == 2)
+        {
+            cout << "Inter the id" << endl ;
+            cin >> x.id ;
+            cout << "Inter the name" << endl ;
+            cin >> x.name ;
+            cout << "Inter the dateOfBirth" << endl ;
+            cin >> x.dateOfBirth ;
+            cout << "Inter the universityLocation" << endl ;
+            cin >> x.universityLocation ;
+            cout << "Inter the field" << endl ;
+            cin >> x.field ;
+            cout << "Inter the workplace" << endl ;
+            cin >> x.workplace ;
+            //get connection and specialties
+            graph.insertVertex(x.id);
+            for (const auto& connection : x.connection) 
+            {
+                list<int> vertices = graph.getVertices();
+                bool find = false ;
+                for (auto x : vertices) 
+                {
+                    if(x == connection)
+                    {
+                        find = true ;
+                        break;
+                    }
+                }
+                if (find == false)
+                    graph.insertVertex(connection);
+                graph.insertEdge(x.id,connection,0);
+            }
+            users[x.id] = x;
+        }
+        menu();
+        cin >> order ;
     }
 }
