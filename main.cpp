@@ -717,7 +717,7 @@ public:
 };
 map<int,user> users;
 
-vector<int> weight(vector<int> id , int person)
+set<int> weight(set<int> id , int person)
 {
     user per = users[person];
     for(auto id : id)
@@ -738,7 +738,7 @@ vector<int> weight(vector<int> id , int person)
 }
 vector<int> searchForRelevant(vector<int> id, Adjacency_list graph , int w){
     vector<int> children ;
-    for(int i=0;i<id.size();i++){
+    for(int i=0 ; i < id.size() ; i++){
         list<pair<int, int>> edges  = graph.outgoingEdges(id[i]) ;
         for (const auto& edge : edges) {
             int child = graph.opposite(id[i], edge);
@@ -748,11 +748,17 @@ vector<int> searchForRelevant(vector<int> id, Adjacency_list graph , int w){
     }
     return children;
 }
-vector<int> makeListOfRelevant(int id,Adjacency_list graph){
-    vector<int> suggestions ;
-    suggestions.push_back(id);
+set<int> makeListOfRelevant(int id,Adjacency_list graph){///need to be fix
+    set<int> suggestions ;
+    suggestions.insert(id);
+    vector<int> temp;
     for(int i = 5 ; i >= 1 ; i--){
-        suggestions = searchForRelevant(suggestions, graph, i);
+        temp = searchForRelevant(temp, graph, i);
+        if(temp.size() > 0){
+            for(auto i:temp){
+                suggestions.insert(i);
+            }
+        }
     }
     return suggestions;
 }
@@ -765,7 +771,7 @@ void menu()
 
 int main()
 {
-    std::ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\users.json");
+    ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\new.json");
     nlohmann::json people;
     json_file >> people;
     user x ;
@@ -814,8 +820,8 @@ int main()
         {
             int id ;
             cin >> id ;
-            vector<int> bfs = makeListOfRelevant(id, graph);
-            vector<int> suggest = weight(bfs,id);
+            set<int> bfs = makeListOfRelevant(id, graph);
+            set<int> suggest = weight(bfs,id);
             vector<user> all_suggest ;
             for(auto sugg : suggest)
             {
