@@ -748,10 +748,10 @@ int main()
     std::ifstream json_file("users.json"); 
     nlohmann::json people;
     json_file >> people;
-    user x ;
     Adjacency_list graph ;
     for (const auto& person : people) 
     {
+        user x ;
         x.id = stoi(person["id"].get<std::string>());
         x.name = person["name"].get<std::string>() ;
         x.dateOfBirth = person["dateOfBirth"].get<std::string>() ;
@@ -810,6 +810,7 @@ int main()
         }
         else if (order == 2)
         {
+            user x ;
             cout << "Inter the id" << endl ;
             cin >> x.id ;
             cout << "Inter the name" << endl ;
