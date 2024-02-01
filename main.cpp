@@ -714,18 +714,30 @@ public:
     {
         return (this->weight > u.weight);
     }
+    void operator = (const user & other)
+    {
+        this->id = other.id ;
+        this->name = other.name ;
+        this->dateOfBirth = other.dateOfBirth ;
+        this->universityLocation = other.universityLocation ;
+        this->field = other.field ;
+        this->workplace = other.workplace ;
+        this->specialties = other.specialties ;
+        this->connection = other.connection ;
+        this->weight = other.weight ;
+    }
 };
 map<int,user> users;
 
 set<int> weight(set<int> id , int person)
 {
     user per = users[person];
-    for(auto id : id)
+    for(auto i : id)
     {
-        user info = users[id] ;
-        for (auto i : per.specialties)
+        user info = users[i] ;
+        for (auto x : per.specialties)
             for (auto j : info.specialties)
-                if (i == j)
+                if (x == j)
                     info.weight += 7; //Considering heavy weight for specialties
         if(info.field == per.field)
             info.weight += 3;
@@ -748,10 +760,10 @@ vector<int> searchForRelevant(vector<int> id, Adjacency_list graph , int w){
     }
     return children;
 }
-set<int> makeListOfRelevant(int id,Adjacency_list graph){///need to be fix
+set<int> makeListOfRelevant(int id,Adjacency_list graph){
     set<int> suggestions ;
-    suggestions.insert(id);
     vector<int> temp;
+    temp.push_back(id);
     for(int i = 5 ; i >= 1 ; i--){
         temp = searchForRelevant(temp, graph, i);
         if(temp.size() > 0){
@@ -759,6 +771,8 @@ set<int> makeListOfRelevant(int id,Adjacency_list graph){///need to be fix
                 suggestions.insert(i);
             }
         }
+        else 
+            break;
     }
     return suggestions;
 }
@@ -818,6 +832,7 @@ int main()
     {
         if (order == 1)
         {
+            cout << "Enter the id" << endl ;
             int id ;
             cin >> id ;
             set<int> bfs = makeListOfRelevant(id, graph);
@@ -829,25 +844,43 @@ int main()
                 all_suggest.push_back(per);
             }
             sort(all_suggest.begin(), all_suggest.end(), greater<user>());
+            user x = users[id];
+            int count = 0;
             for(auto sugg : all_suggest)
             {
-                cout << "name : " << sugg.name << "id : " << sugg.id << endl ;
-            }
+                if(count != 20)
+                {
+                    bool find = false ;
+                    for (auto j : x.connection)
+                    {
+                        if(sugg.id == j)
+                        {
+                            find = true;
+                            break;
+                        }
+                    }
+                    if(find == false)
+                    {
+                        cout << "name : " << sugg.name << " | id : " << sugg.id << endl ;
+                        count += 1;
+                    }
+                }
+            } 
         }
         else if (order == 2)
         {
             user x ;
-            cout << "Inter the id" << endl ;
+            cout << "Enter the id" << endl ;
             cin >> x.id ;
-            cout << "Inter the name" << endl ;
+            cout << "Enter the name" << endl ;
             cin >> x.name ;
-            cout << "Inter the dateOfBirth" << endl ;
+            cout << "Enter the dateOfBirth" << endl ;
             cin >> x.dateOfBirth ;
-            cout << "Inter the universityLocation" << endl ;
+            cout << "Enter the universityLocation" << endl ;
             cin >> x.universityLocation ;
-            cout << "Inter the field" << endl ;
+            cout << "Enter the field" << endl ;
             cin >> x.field ;
-            cout << "Inter the workplace" << endl ;
+            cout << "Enter the workplace" << endl ;
             cin >> x.workplace ;
             //get connection and specialties
             graph.insertVertex(x.id);
