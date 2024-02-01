@@ -771,7 +771,7 @@ void menu()
 
 int main()
 {
-    ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\new.json");
+    ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\users.json");
     nlohmann::json people;
     json_file >> people;
     user x ;
@@ -836,37 +836,66 @@ int main()
         }
         else if (order == 2)
         {
-            cout << "Inter the id" << endl ;
+            user x ;
+            cout << "ID : "  ;
             cin >> x.id ;
-            cout << "Inter the name" << endl ;
-            cin >> x.name ;
-            cout << "Inter the dateOfBirth" << endl ;
-            cin >> x.dateOfBirth ;
-            cout << "Inter the universityLocation" << endl ;
-            cin >> x.universityLocation ;
-            cout << "Inter the field" << endl ;
-            cin >> x.field ;
-            cout << "Inter the workplace" << endl ;
-            cin >> x.workplace ;
-            //get connection and specialties
+            while(users.count(x.id) == 1){
+                cout<<"Sorry!This id already taken,Please try again:)\n";
+                cin >> x.id ;
+            }
+            cout << "Name : " << endl ;
+            cin  >> x.name ;
+            cout << "DateOfBirth : " << endl ;
+            cin  >> x.dateOfBirth ;
+            cout << "UniversityLocation : " << endl ;
+            cin  >> x.universityLocation ;
+            cout << "Field : " << endl ;
+            cin  >> x.field ;
+            cout << "Workplace : " << endl ;
+            cin  >> x.workplace ;
+            cout << "What field do you specialize in?" << endl;
+            string line;
+            cin>>line;
+            x.specialties.push_back(line);
+            int order2;
+            cin>>order2;
+            cout << "Enter 1 if you want add more specialties\n";
+            while(order2 == 1){
+                cin>>line;
+                x.specialties.push_back(line);
+            }
+            users.insert(make_pair(x.id,x));
             graph.insertVertex(x.id);
-            for (const auto& connection : x.connection)
+            cout << "Registration was successful\nThese are my suggestions for you" << endl;
+            list<int> vertices = graph.getVertices();
+            set<int> tempset(vertices.begin(),vertices.end());
+            tempset = weight(tempset,x.id);
+            vector<user> all_suggest ;
+            for(auto sugg : tempset)
             {
-                list<int> vertices = graph.getVertices();
-                bool find = false ;
-                for (auto x : vertices)
+                user per = users[sugg];
+                all_suggest.push_back(per);
+            }
+            sort(all_suggest.begin(), all_suggest.end(), greater<user>());
+            int count = 0;
+            for(auto sugg : all_suggest)
+            {
+                if(count != 20)
                 {
-                    if(x == connection)
-                    {
-                        find = true ;
-                        break;
-                    }
+                    cout << "name : " << sugg.name << " | id : " << sugg.id << endl ;
+                    count += 1;
                 }
-                if (find == false)
-                    graph.insertVertex(connection);
+            }
+            cout << "If you want to follow someone, please enter their ID, otherwise press zero" << endl;
+            int id;
+            cin >> id;
+            while(id != 0){
+                cin >> id;
+                x.connection.push_back(id);
+            }
+            for (const auto& connection : x.connection){
                 graph.insertEdge(x.id,connection,0);
             }
-            users[x.id] = x;
         }
         menu();
         cin >> order ;
