@@ -732,9 +732,9 @@ map<int,user> users;
 set<int> weight(set<int> id , int person)
 {
     user per = users[person];
-    for(auto i : id)
+    for(auto ID : id)
     {
-        user info = users[i] ;
+        user info = users[ID] ;
         for (auto x : per.specialties)
             for (auto j : info.specialties)
                 if (x == j)
@@ -785,7 +785,7 @@ void menu()
 
 int main()
 {
-    ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\new.json");
+    ifstream json_file("D:\\UNI\\SEMASTER3\\Ramezani\\json\\users.json");
     nlohmann::json people;
     json_file >> people;
     Adjacency_list graph ;
@@ -891,10 +891,12 @@ int main()
             cin>>line;
             x.specialties.push_back(line);
             int order2;
-            cin>>order2;
             cout << "Enter 1 if you want add more specialties\n";
+            cin>>order2;
             while(order2 == 1){
-                cin>>line;
+                cin >> line;
+                cout << "Enter 1 if you want add more specialties\n";
+                cin >> order2;
                 x.specialties.push_back(line);
             }
             users.insert(make_pair(x.id,x));
